@@ -1,0 +1,63 @@
+# This example demonstrates how to use a resource template to wait on another workflow.
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-keystone
+spec:
+  entrypoint: wf-keystone
+  serviceAccountName: keystone-api
+  templates:
+  - name: wf-keystone 
+    steps:
+    - - name: wf-memcached
+        template: wf-memcached
+    - - name: wf-mariadb
+        template: wf-mariadb
+    - - name: wf-rabbitmq
+        template: wf-rabbitmq
+    - - name: wf-keystone-api
+        template: wf-keystone-api
+
+  - name: wf-memcached
+    resource:
+      action: get
+      successCondition: status.phase == Succeeded
+      failureCondition: status.phase in (Failed, Error)
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-memcached
+
+  - name: wf-mariadb
+    resource:
+      action: get
+      successCondition: status.phase == Succeeded
+      failureCondition: status.phase in (Failed, Error)
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-mariadb
+
+  - name: wf-rabbitmq
+    resource:
+      action: get
+      successCondition: status.phase == Succeeded
+      failureCondition: status.phase in (Failed, Error)
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-rabbitmq
+
+  - name: wf-keystone-api
+    resource:
+      action: get
+      successCondition: status.phase == Succeeded
+      failureCondition: status.phase in (Failed, Error)
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-keystone-api
