@@ -1,0 +1,27 @@
+# The workflow checks that all the jobs and services required for 
+# rabbitmq to start are here.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-rabbitmq
+spec:
+  entrypoint: wf-rabbitmq
+  # serviceAccountName: rabbitmq-rabbitmq
+  serviceAccountName: keystone-api
+  templates:
+  - name: wf-rabbitmq
+    steps:
+    - - name: svc-rabbitmq
+        template: svc-rabbitmq
+
+  - name: svc-rabbitmq
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == rabbitmq
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: rabbitmq
