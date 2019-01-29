@@ -1,0 +1,157 @@
+# The workflow checks that all the jobs and services required for 
+# keystone-api to start are here.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-keystone-api
+spec:
+  entrypoint: wf-keystone-api
+  serviceAccountName: keystone-api
+  templates:
+  - name: wf-keystone-api
+    steps:
+    - - name: svc-memcached
+        template: svc-memcached
+    - - name: svc-mariadb
+        template: svc-mariadb
+    - - name: wf-keystone-db-sync
+        template: wf-keystone-db-sync
+    - - name: job-keystone-credential-setup
+        template: job-keystone-credential-setup
+    - - name: job-keystone-fernet-setup
+        template: job-keystone-fernet-setup
+    - - name: wf-keystone-rabbit-init
+        template: wf-keystone-rabbit-init
+    - - name: svc-keystone-api
+        template: svc-keystone-api
+
+  - name: wf-keystone-db-sync
+    steps:
+    - - name: svc-mariadb
+        template: svc-mariadb
+    - - name: wf-keystone-db-init
+        template: wf-keystone-db-init
+    - - name: job-keystone-credential-setup
+        template: job-keystone-credential-setup
+    - - name: job-keystone-fernet-setup
+        template: job-keystone-fernet-setup
+    - - name: wf-keystone-rabbit-init
+        template: wf-keystone-rabbit-init
+    - - name: job-keystone-db-sync
+        template: job-keystone-db-sync
+
+  - name: wf-keystone-db-init
+    steps:
+    - - name: svc-mariadb
+        template: svc-mariadb
+    - - name: job-keystone-db-init
+        template: job-keystone-db-init
+
+  - name: wf-keystone-rabbit-init
+    steps:
+    - - name: svc-rabbitmq
+        template: svc-rabbitmq
+    - - name: job-keystone-rabbit-init
+        template: job-keystone-rabbit-init
+
+  - name: svc-memcached
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == memcached
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: memcached
+
+  - name: svc-mariadb
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == mariadb
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: mariadb
+
+  - name: svc-rabbitmq
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == rabbitmq
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: rabbitmq
+
+  - name: svc-keystone-api
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == keystone-api
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: keystone-api
+
+  - name: job-keystone-db-sync
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-db-sync
+
+  - name: job-keystone-db-init
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-db-init
+
+  - name: job-keystone-credential-setup
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-credential-setup
+
+  - name: job-keystone-fernet-setup
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-fernet-setup
+
+  - name: job-keystone-rabbit-init
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-rabbit-init
+
+

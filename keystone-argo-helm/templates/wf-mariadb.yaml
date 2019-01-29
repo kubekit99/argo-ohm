@@ -1,0 +1,67 @@
+# The workflow checks that all the jobs and services required for 
+# mariadb to start are here.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-mariadb
+spec:
+  entrypoint: wf-mariadb
+  # serviceAccountName: mariadb-mariadb
+  serviceAccountName: keystone-api
+  templates:
+  - name: wf-mariadb
+    steps:
+    - - name: svc-mariadb
+        template: svc-mariadb
+    - - name: svc-mariadb-server
+        template: svc-mariadb-server
+    - - name: svc-mariadb-discovery
+        template: svc-mariadb-discovery
+    - - name: svc-mariadb-ingress-error-pages
+        template: svc-mariadb-ingress-error-pages
+
+  - name: svc-mariadb
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == mariadb
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: mariadb
+
+  - name: svc-mariadb-server
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == mariadb-server
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: mariadb-server
+
+  - name: svc-mariadb-discovery
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == mariadb-discovery
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: mariadb-discovery
+
+  - name: svc-mariadb-ingress-error-pages
+    resource:
+      action: get
+      # Really boggus. Doesn't check if service actually operational
+      successCondition: metadata.name == mariadb-ingress-error-pages
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: mariadb-ingress-error-pages
+

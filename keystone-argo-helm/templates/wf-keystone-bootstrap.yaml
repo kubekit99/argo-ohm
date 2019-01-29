@@ -1,0 +1,44 @@
+# This example demonstrates how to use a resource template to wait on another workflow.
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-keystone-bootstrap
+spec:
+  entrypoint: wf-keystone-bootstrap
+  serviceAccountName: keystone-bootstrap
+  templates:
+  - name: wf-keystone-bootstrap
+    steps:
+    - - name: wf-keystone-domain-manage
+        template: wf-keystone-domain-manage
+      - name: svc-keystone-api
+        template: svc-keystone-api
+
+  - name: wf-keystone-domain-manage
+    steps:
+    - - name: job-keystone-domain-manage
+        template: job-keystone-domain-manage
+      - name: svc-keystone-api
+        template: svc-keystone-api
+
+  - name: job-keystone-domain-manage
+    resource:
+      action: get
+      successCondition: status.succeeded == 1
+      failureCondition: status.succeeded == 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: keystone-domain-manage
+
+  - name: svc-keystone-api
+    resource:
+      action: get
+      successCondition: metadata.name == keystone-api
+      manifest: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: keystone-api
+
