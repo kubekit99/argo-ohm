@@ -1,0 +1,28 @@
+---
+# Create a pod which is dependent on the custom resource
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dependent-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  initContainers:
+  - name: init
+    image: ianhowell/kubernetes-entrypoint
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: COMMAND
+      value: "echo \"Finished :)\""
+    - name: INITIAL_SLEEP_INTERVAL
+      value: "2000"
+    - name: BACKOFF_RATE
+      value: "1.0"
+    - name: OUTPUT_JSON
+      value: "true"
+    - name: DEPENDENCY_CUSTOM_RESOURCE
+      value: "[{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"Workflow\",\"namespace\":\"openstack\",\"name\":\"wf-keystone-api\",\"fields\":[{\"key\":\"status.nodes.phase\",\"value\":\"Succeeded\"}]}]"
+    command:
+      - "./kubernetes-entrypoint"
+
