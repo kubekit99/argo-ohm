@@ -8,6 +8,7 @@ spec:
   containers:
   - name: nginx
     image: nginx
+  serviceAccountName: dag-demo-account
   initContainers:
   - name: init
     image: ianhowell/kubernetes-entrypoint
@@ -22,7 +23,6 @@ spec:
     - name: OUTPUT_JSON
       value: "true"
     - name: DEPENDENCY_CUSTOM_RESOURCE
-      value: "[{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"Workflow\",\"namespace\":\"openstack\",\"name\":\"wf-keystone-api\",\"fields\":[{\"key\":\"status.nodes.phase\",\"value\":\"Succeeded\"}]}]"
+      value: "[{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"Workflow\",\"namespace\":\"openstack\",\"name\":\"wf-keystone-api\",\"fields\":[{\"key\":\"status.phase\",\"value\":\"Succeeded\"}]}]"
     command:
       - "./kubernetes-entrypoint"
-
