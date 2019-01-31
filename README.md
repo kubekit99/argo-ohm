@@ -91,7 +91,7 @@ Argo is using a CRD pattern, so can be controlled through kubectl without using 
 
 ```bash
 cd keystone-argo-helm
-helm install --name armadalike-keystone --namespace
+helm install --name armadalike-keystone --namespace .
 ```
 
 ### Note 1
@@ -104,6 +104,58 @@ The workflow 'keystone-argo-helm/templates/wf-keystone.yaml' is an attempt to si
 One workflow (equivalent of chartgroup) is basically waiting for the other worflow completed (equivalent of helm chart).
 Still having with serviceAccount. Interesting aspect is that we still have access to the templating of helm as for armada
 
+## Combining new kubernetes-endpoint and workflow
+
+### Deployment
+
+```bash
+cd kubernetesendpoint-argo-poc1
+helm install --name argo-poc1 --namespace openstack .
+```
+
+### Notes
+
+TBD
+
+## Removing jobs in keystone helm chart and replacing them with argo steps
+
+### Development
+
+- Brute force and ugly copy paste of keystone helm chart.
+- helm template . > allexpended.yaml
+- start to create small file out of allexpended.yaml into templates/steps.
+- Use include in the wf-keystone-api.yaml and replace "jobs" by "containers" and include the "steps/xxx.yaml"
+
+### Deployment for debugging
+
+Ensure that the "good" keystone helm chart has been run first. This procedure only necessary to understand
+how the workflow works
+
+```bash
+cd kubernetesendpoint-argo-poc2
+# helm install --name argo-poc2 --namespace openstack .
+
+helm template . -x templates/wf-keystone-api.yaml > debugging.yaml
+argo submit -f debugging.yaml -n openstack
+argo get wf-keystone-api -n openstack
+```
+
+### Deployment
+
+```bash
+cd kubernetesendpoint-argo-poc2
+helm install --name keystone-argo --namespace openstack .
+```
+
+### Notes
+
+- volumes handling at the top of the workflow looks like kind of strange. Can't put on each container ?
+- gradally running "git rm templates/jobs-xxx.yaml" after those have been converted to steps
+
+
 ## Conclusion
 
 TBD
+
+
+

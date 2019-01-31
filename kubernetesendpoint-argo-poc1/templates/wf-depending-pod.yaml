@@ -8,7 +8,7 @@ spec:
   containers:
   - name: nginx
     image: nginx
-  serviceAccountName: dag-demo-account
+  serviceAccountName: wf-keystone-sa
   initContainers:
   - name: init
     image: ianhowell/kubernetes-entrypoint
