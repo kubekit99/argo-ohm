@@ -109,15 +109,8 @@ spec:
           name: keystone-api
 
   - name: job-keystone-db-sync
-    resource:
-      action: get
-      successCondition: status.succeeded == 1
-      failureCondition: status.succeeded == 0
-      manifest: |
-        apiVersion: batch/v1
-        kind: Job
-        metadata:
-          name: keystone-db-sync
+    container:
+    {{- include "keystone.templates.steps._db_sync.container" . | nindent 6 }}
 
   - name: job-keystone-db-init
     container:

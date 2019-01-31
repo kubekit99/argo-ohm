@@ -101,90 +101,90 @@ spec:
 {{- end }}
 
 {{- define "keystone.templates.steps._db_sync.container" -}}
-          name: "keystone-db-sync"
-          image: "docker.io/openstackhelm/keystone:ocata"
-          imagePullPolicy: "IfNotPresent"
+name: "keystone-db-sync"
+image: "docker.io/openstackhelm/keystone:ocata"
+imagePullPolicy: "IfNotPresent"
           
-          env:
-            - name: OS_BOOTSTRAP_ADMIN_URL
-              value: http://keystone.default.svc.cluster.local:80/v3
-            - name: OS_BOOTSTRAP_INTERNAL_URL
-              value: http://keystone-api.default.svc.cluster.local:5000/v3
-            - name: OS_BOOTSTRAP_PUBLIC_URL
-              value: http://keystone.default.svc.cluster.local:80/v3
-            - name: OPENSTACK_CONFIG_FILE
-              value: /etc/keystone/keystone.conf
-            - name: OPENSTACK_CONFIG_DB_SECTION
-              value: database
-            - name: OPENSTACK_CONFIG_DB_KEY
-              value: connection
-            - name: OS_IDENTITY_API_VERSION
-              value: "3"
-            - name: OS_AUTH_URL
-              valueFrom:
-                secretKeyRef:
-                  key: OS_AUTH_URL
-                  name: keystone-keystone-admin
-            - name: OS_REGION_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: OS_REGION_NAME
-                  name: keystone-keystone-admin
-            - name: OS_INTERFACE
-              valueFrom:
-                secretKeyRef:
-                  key: OS_INTERFACE
-                  name: keystone-keystone-admin
-            - name: OS_PROJECT_DOMAIN_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: OS_PROJECT_DOMAIN_NAME
-                  name: keystone-keystone-admin
-            - name: OS_PROJECT_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: OS_PROJECT_NAME
-                  name: keystone-keystone-admin
-            - name: OS_USER_DOMAIN_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: OS_USER_DOMAIN_NAME
-                  name: keystone-keystone-admin
-            - name: OS_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  key: OS_USERNAME
-                  name: keystone-keystone-admin
-            - name: OS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: OS_PASSWORD
-                  name: keystone-keystone-admin
+env:
+  - name: OS_BOOTSTRAP_ADMIN_URL
+    value: http://keystone.default.svc.cluster.local:80/v3
+  - name: OS_BOOTSTRAP_INTERNAL_URL
+    value: http://keystone-api.default.svc.cluster.local:5000/v3
+  - name: OS_BOOTSTRAP_PUBLIC_URL
+    value: http://keystone.default.svc.cluster.local:80/v3
+  - name: OPENSTACK_CONFIG_FILE
+    value: /etc/keystone/keystone.conf
+  - name: OPENSTACK_CONFIG_DB_SECTION
+    value: database
+  - name: OPENSTACK_CONFIG_DB_KEY
+    value: connection
+  - name: OS_IDENTITY_API_VERSION
+    value: "3"
+  - name: OS_AUTH_URL
+    valueFrom:
+      secretKeyRef:
+        key: OS_AUTH_URL
+        name: keystone-keystone-admin
+  - name: OS_REGION_NAME
+    valueFrom:
+      secretKeyRef:
+        key: OS_REGION_NAME
+        name: keystone-keystone-admin
+  - name: OS_INTERFACE
+    valueFrom:
+      secretKeyRef:
+        key: OS_INTERFACE
+        name: keystone-keystone-admin
+  - name: OS_PROJECT_DOMAIN_NAME
+    valueFrom:
+      secretKeyRef:
+        key: OS_PROJECT_DOMAIN_NAME
+        name: keystone-keystone-admin
+  - name: OS_PROJECT_NAME
+    valueFrom:
+      secretKeyRef:
+        key: OS_PROJECT_NAME
+        name: keystone-keystone-admin
+  - name: OS_USER_DOMAIN_NAME
+    valueFrom:
+      secretKeyRef:
+        key: OS_USER_DOMAIN_NAME
+        name: keystone-keystone-admin
+  - name: OS_USERNAME
+    valueFrom:
+      secretKeyRef:
+        key: OS_USERNAME
+        name: keystone-keystone-admin
+  - name: OS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: OS_PASSWORD
+        name: keystone-keystone-admin
             
-          command:
-            - /tmp/db-sync.sh
-          volumeMounts:
-            - name: db-sync-sh
-              mountPath: /tmp/db-sync.sh
-              subPath: db-sync.sh
-              readOnly: true
-            - name: etc-service
-              mountPath: "/etc/keystone"
-            - name: db-sync-conf
-              mountPath: "/etc/keystone/keystone.conf"
-              subPath: "keystone.conf"
-              readOnly: true
-            - name: db-sync-conf
-              mountPath: "/etc/keystone/logging.conf"
-              subPath: "logging.conf"
-              readOnly: true
-            - mountPath: /tmp/endpoint-update.py
-              name: db-sync-sh
-              readOnly: true
-              subPath: endpoint-update.py
-            - mountPath: /etc/keystone/fernet-keys/
-              name: keystone-fernet-keys
-              readOnly: true
+command:
+  - /tmp/db-sync.sh
+volumeMounts:
+  - name: db-sync-sh
+    mountPath: /tmp/db-sync.sh
+    subPath: db-sync.sh
+    readOnly: true
+  - name: etc-service
+    mountPath: "/etc/keystone"
+  - name: db-sync-conf
+    mountPath: "/etc/keystone/keystone.conf"
+    subPath: "keystone.conf"
+    readOnly: true
+  - name: db-sync-conf
+    mountPath: "/etc/keystone/logging.conf"
+    subPath: "logging.conf"
+    readOnly: true
+  - mountPath: /tmp/endpoint-update.py
+    name: db-sync-sh
+    readOnly: true
+    subPath: endpoint-update.py
+  - mountPath: /etc/keystone/fernet-keys/
+    name: keystone-fernet-keys
+    readOnly: true
 {{- end }}
 
 {{- define "keystone.templates.steps._db_sync.volumes" -}}
