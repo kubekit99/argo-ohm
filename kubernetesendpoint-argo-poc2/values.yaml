@@ -101,17 +101,7 @@ dependencies:
           - endpoint: node
             service: local_image_registry
   static:
-    api:
-      jobs:
-        - keystone-db-sync
-        - keystone-credential-setup
-        - keystone-fernet-setup
-        - keystone-rabbit-init
-      services:
-        - endpoint: internal
-          service: oslo_cache
-        - endpoint: internal
-          service: oslo_db
+    api: null
     bootstrap:
       jobs:
         - keystone-domain-manage
@@ -126,23 +116,9 @@ dependencies:
       services:
         - endpoint: internal
           service: oslo_db
-    db_init:
-      services:
-        - endpoint: internal
-          service: oslo_db
-    db_sync:
-      jobs:
-        - keystone-db-init
-        - keystone-credential-setup
-        - keystone-fernet-setup
-        - keystone-rabbit-init
-      services:
-        - endpoint: internal
-          service: oslo_db
-    rabbit_init:
-      services:
-        - service: oslo_messaging
-          endpoint: internal
+    db_init: null
+    db_sync: null
+    rabbit_init: null
     domain_manage:
       services:
         - endpoint: internal
