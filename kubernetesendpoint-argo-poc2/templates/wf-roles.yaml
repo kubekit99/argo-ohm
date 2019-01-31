@@ -26,6 +26,146 @@ rules:
       - update 
       - watch 
 --- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-credential-setup
+  namespace: openstack
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - create
+  - update
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-fernet-setup
+  namespace: openstack
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - create
+  - update
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-api
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  - jobs
+  - pods
+  verbs:
+  - get
+  - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-bootstrap
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  - jobs
+  - pods
+  verbs:
+  - get
+  - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-db-init
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  verbs:
+  - get
+  - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-db-sync
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  - jobs
+  - pods
+  verbs:
+  - get
+  - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-domain-manage
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  verbs:
+  - get
+  - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keystone-openstack-keystone-rabbit-init
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  - batch
+  - apps
+  resources:
+  - services
+  - endpoints
+  verbs:
+  - get
+  - list
+--- 
 apiVersion: rbac.authorization.k8s.io/v1 
 kind: RoleBinding 
 metadata: 
