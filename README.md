@@ -129,8 +129,7 @@ To create the following DAG (very messy, sorry):
 ### Development
 
 - Brute force and ugly copy paste of keystone helm chart.
-- helm template . > allexpended.yaml
-- start to create small file out of allexpended.yaml into templates/steps.
+- helm template . --namespace openstack -x templates/jobs-xxx.yaml > templates/steps/_xxx.yaml
 - Use include in the wf-keystone-api.yaml and replace "jobs" by "containers" and include the "steps/xxx.yaml"
 
 ### Deployment for debugging
@@ -142,7 +141,7 @@ how the workflow works
 cd kubernetesendpoint-argo-poc2
 # helm install --name argo-poc2 --namespace openstack .
 
-helm template . -x templates/wf-keystone-api.yaml > debugging.yaml
+helm template . --namespace openstack -x templates/wf-keystone-api.yaml > debugging.yaml
 argo submit -f debugging.yaml -n openstack
 argo get wf-keystone-api -n openstack
 ```
