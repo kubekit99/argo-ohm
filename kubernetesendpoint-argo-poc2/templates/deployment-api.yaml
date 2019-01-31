@@ -59,9 +59,9 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: PATH
-          value: "/"
-        # - name: COMMAND
-        #  value: "echo \"Finished :)\""
+          value: "/app:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/"
+        - name: COMMAND
+          value: "echo \"Finished :)\""
         - name: INITIAL_SLEEP_INTERVAL
           value: "1000.0"
         - name: BACKOFF_RATE
