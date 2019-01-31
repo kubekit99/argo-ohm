@@ -101,7 +101,7 @@ env:
 - name: KEYSTONE_GROUP
   value: "keystone"
 - name: KUBERNETES_NAMESPACE
-  value: "default"
+  value: "openstack"
 - name: KEYSTONE_KEYS_REPOSITORY
   value: "/etc/keystone/fernet-keys/"
 command:

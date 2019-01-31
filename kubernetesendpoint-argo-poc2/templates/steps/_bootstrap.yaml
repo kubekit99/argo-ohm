@@ -80,7 +80,7 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "default:keystone-api"
+              value: "openstack:keystone-api"
             - name: DEPENDENCY_JOBS
               value: "keystone-domain-manage"
             - name: DEPENDENCY_DAEMONSET

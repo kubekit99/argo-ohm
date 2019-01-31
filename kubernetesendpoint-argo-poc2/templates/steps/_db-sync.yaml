@@ -80,7 +80,7 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: "default:mariadb"
+              value: "openstack:mariadb"
             - name: DEPENDENCY_JOBS
               value: "keystone-db-init,keystone-credential-setup,keystone-fernet-setup,keystone-rabbit-init"
             - name: DEPENDENCY_DAEMONSET
