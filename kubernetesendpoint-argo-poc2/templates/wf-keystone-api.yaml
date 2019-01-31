@@ -27,32 +27,36 @@ spec:
         template: svc-mariadb
       - name: svc-rabbitmq
         template: svc-rabbitmq
+
       - name: job-keystone-db-init
         template: job-keystone-db-init
         dependencies:
         - svc-mariadb
+
       - name: job-keystone-rabbit-init
         template: job-keystone-rabbit-init
         dependencies:
         - svc-rabbitmq
+
       - name: job-keystone-db-sync
         template: job-keystone-db-sync
         dependencies:
         - job-keystone-db-init
         - job-keystone-rabbit-init
+        - job-keystone-credential-setup
+        - job-keystone-fernet-setup
+
       - name: job-keystone-credential-setup
         template: job-keystone-credential-setup
-        dependencies:
-        - job-keystone-db-sync
+
       - name: job-keystone-fernet-setup
         template: job-keystone-fernet-setup
-        dependencies:
-        - job-keystone-db-sync
+
       - name: svc-keystone-api
         template: svc-keystone-api
         dependencies:
-          - job-keystone-credential-setup
-          - job-keystone-fernet-setup
+          - job-keystone-db-sync
+          - svc-memcached
 
   - name: svc-memcached
     resource:
