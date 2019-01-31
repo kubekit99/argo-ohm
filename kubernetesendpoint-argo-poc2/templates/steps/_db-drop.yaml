@@ -1,0 +1,6 @@
+---
+{{- define "keystone.templates.steps._db_drop.container" -}}
+{{- end }}
+
+{{- define "keystone.templates.steps._db_drop.volumes" -}}
+{{- end }}

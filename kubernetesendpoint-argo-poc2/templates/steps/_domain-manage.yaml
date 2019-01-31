@@ -1,0 +1,245 @@
+---
+{{- define "keystone.templates.steps._domain_manage.container" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keystone-domain-manage
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: release-name-keystone-domain-manage
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: release-name-default-keystone-domain-manage
+subjects:
+  - kind: ServiceAccount
+    name: keystone-domain-manage
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: release-name-default-keystone-domain-manage
+  namespace: default
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - services
+      - endpoints
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keystone-domain-manage
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: release-name
+        application: keystone
+        component: domain-manage
+    spec:
+      serviceAccountName: keystone-domain-manage
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      initContainers:
+        
+        
+        - name: init
+          image: "quay.io/stackanetes/kubernetes-entrypoint:v0.3.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "default:keystone-api"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: COMMAND
+              value: "echo done"
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            null
+            
+        - name: keystone-domain-manage-init
+          image: "docker.io/openstackhelm/heat:ocata"
+          imagePullPolicy: IfNotPresent
+          
+          env:            
+            - name: OS_IDENTITY_API_VERSION
+              value: "3"
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_AUTH_URL
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_REGION_NAME
+            - name: OS_INTERFACE
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_INTERFACE
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_DOMAIN_NAME
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_NAME
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USER_DOMAIN_NAME
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USERNAME
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PASSWORD
+          command:
+            - /tmp/domain-manage-init.sh
+          volumeMounts:
+            - name: keystone-bin
+              mountPath: /tmp/domain-manage-init.sh
+              subPath: domain-manage-init.sh
+              readOnly: true
+      containers:
+        - name: keystone-domain-manage
+          image: "docker.io/openstackhelm/keystone:ocata"
+          imagePullPolicy: IfNotPresent
+          
+          env:            
+            - name: OS_IDENTITY_API_VERSION
+              value: "3"
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_AUTH_URL
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_REGION_NAME
+            - name: OS_INTERFACE
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_INTERFACE
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_DOMAIN_NAME
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_NAME
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USER_DOMAIN_NAME
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USERNAME
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PASSWORD
+          command:
+            - /tmp/domain-manage.sh
+          volumeMounts:
+            - name: etckeystonedomains
+              mountPath: /etc/keystonedomains
+            - name: etckeystone
+              mountPath: /etc/keystone
+            - name: keystone-bin
+              mountPath: /tmp/domain-manage.sh
+              subPath: domain-manage.sh
+              readOnly: true
+            - name: keystone-bin
+              mountPath: /tmp/domain-manage.py
+              subPath: domain-manage.py
+              readOnly: true
+            - name: keystone-etc
+              mountPath: /etc/keystone/keystone.conf
+              subPath: keystone.conf
+              readOnly: true
+            - name: keystone-etc
+              mountPath: /etc/keystone/logging.conf
+              subPath: logging.conf
+              readOnly: true
+            - name: keystone-fernet-keys
+              mountPath: /etc/keystone/fernet-keys/
+            - name: keystone-credential-keys
+              mountPath: /etc/keystone/credential-keys/
+{{- end }}
+
+{{- define "keystone.templates.steps._domain_manage.volumes" -}}
+- name: etckeystone
+  emptyDir: {}
+- name: etckeystonedomains
+  emptyDir: {}
+- name: keystone-etc
+  secret:
+    secretName: keystone-etc
+    defaultMode: 0444
+- name: keystone-bin
+  configMap:
+    name: keystone-bin
+    defaultMode: 0555
+- name: keystone-fernet-keys
+  secret:
+    secretName: keystone-fernet-keys
+- name: keystone-credential-keys
+  secret:
+    secretName: keystone-credential-keys
+{{- end }}
+

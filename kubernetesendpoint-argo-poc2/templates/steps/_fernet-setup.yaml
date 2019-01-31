@@ -1,0 +1,140 @@
+---
+{{- define "keystone.templates.steps._fernet_setup.container" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keystone-fernet-setup
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: keystone-fernet-setup
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - create
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: keystone-fernet-setup
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-fernet-setup
+subjects:
+  - kind: ServiceAccount
+    name: keystone-fernet-setup
+    namespace: default
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keystone-fernet-setup
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: release-name
+        application: keystone
+        component: fernet-setup
+    spec:
+      serviceAccountName: keystone-fernet-setup
+      initContainers:
+        
+        
+        - name: init
+          image: "quay.io/stackanetes/kubernetes-entrypoint:v0.3.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: ""
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: COMMAND
+              value: "echo done"
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            null
+            
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+      containers:
+        - name: keystone-fernet-setup
+          image: "docker.io/openstackhelm/keystone:ocata"
+          imagePullPolicy: IfNotPresent
+          
+          env:
+          - name: KEYSTONE_USER
+            value: "keystone"
+          - name: KEYSTONE_GROUP
+            value: "keystone"
+          - name: KUBERNETES_NAMESPACE
+            value: "default"
+          - name: KEYSTONE_KEYS_REPOSITORY
+            value: "/etc/keystone/fernet-keys/"
+          command:
+            - python
+            - /tmp/fernet-manage.py
+            - fernet_setup
+          volumeMounts:
+          - name: etckeystone
+            mountPath: /etc/keystone
+          - name: fernet-keys
+            mountPath: "/etc/keystone/fernet-keys/"
+          - name: keystone-etc
+            mountPath: /etc/keystone/keystone.conf
+            subPath: keystone.conf
+            readOnly: true
+          - name: keystone-etc
+            mountPath: /etc/keystone/logging.conf
+            subPath: logging.conf
+            readOnly: true
+          - name: keystone-bin
+            mountPath: /tmp/fernet-manage.py
+            subPath: fernet-manage.py
+            readOnly: true
+{{- end }}
+
+{{- define "keystone.templates.steps._fernet_setup.volumes" -}}
+- name: etckeystone
+  emptyDir: {}
+- name: fernet-keys
+  emptyDir: {}
+- name: keystone-etc
+  secret:
+    secretName: keystone-etc
+    defaultMode: 0444
+- name: keystone-bin
+  configMap:
+    name: keystone-bin
+    defaultMode: 0555
+{{- end }}

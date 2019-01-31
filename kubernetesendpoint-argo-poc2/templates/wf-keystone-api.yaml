@@ -9,7 +9,13 @@ spec:
   entrypoint: wf-keystone-api
   serviceAccountName: keystone-api
   volumes:
-  {{- include "keystone.templates.steps._db_init.volumes" . | nindent 2 }}
+  {{- include "keystone.templates.steps._bootstrap.volumes" . | nindent 2 }}
+  {{- include "keystone.templates.steps._credential_setup.volumes" . | nindent 2}}
+  {{- include "keystone.templates.steps._db_init.volumes" . | nindent 2}}
+  {{- include "keystone.templates.steps._db_sync.volumes" . | nindent 2}}
+  {{- include "keystone.templates.steps._domain_manage.volumes" . | nindent 2}}
+  {{- include "keystone.templates.steps._fernet_setup.volumes" . | nindent 2}}
+  {{- include "keystone.templates.steps._rabbit_init.volumes" . | nindent 2}}
 
   templates:
   - name: wf-keystone-api

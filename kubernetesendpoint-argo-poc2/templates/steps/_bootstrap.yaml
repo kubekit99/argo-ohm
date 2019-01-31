@@ -1,0 +1,182 @@
+---
+{{- define "keystone.templates.steps._bootstrap.ignore" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keystone-bootstrap
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: release-name-keystone-bootstrap
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: release-name-default-keystone-bootstrap
+subjects:
+  - kind: ServiceAccount
+    name: keystone-bootstrap
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: release-name-default-keystone-bootstrap
+  namespace: default
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - services
+      - endpoints
+      - jobs
+      - pods
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "keystone-bootstrap"
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: release-name
+        application: keystone
+        component: bootstrap
+    spec:
+      serviceAccountName: keystone-bootstrap
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+        
+      initContainers:
+        
+        
+        - name: init
+          image: "quay.io/stackanetes/kubernetes-entrypoint:v0.3.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "default:keystone-api"
+            - name: DEPENDENCY_JOBS
+              value: "keystone-domain-manage"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: COMMAND
+              value: "echo done"
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+            
+      containers:
+        - name: bootstrap
+{{- end }}
+
+{{- define "keystone.templates.steps._bootstrap.container" -}}
+          name: bootstrap
+          image: docker.io/openstackhelm/heat:ocata
+          imagePullPolicy: IfNotPresent
+          
+          env:            
+            - name: OS_IDENTITY_API_VERSION
+              value: "3"
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_AUTH_URL
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_REGION_NAME
+            - name: OS_INTERFACE
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_INTERFACE
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_DOMAIN_NAME
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PROJECT_NAME
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USER_DOMAIN_NAME
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_USERNAME
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keystone-keystone-admin
+                  key: OS_PASSWORD
+          command:
+            - /tmp/bootstrap.sh
+          volumeMounts:
+            - name: bootstrap-sh
+              mountPath: /tmp/bootstrap.sh
+              subPath: bootstrap.sh
+              readOnly: true
+            - name: etc-service
+              mountPath: "/etc/keystone"
+            - name: bootstrap-conf
+              mountPath: "/etc/keystone/keystone.conf"
+              subPath: "keystone.conf"
+              readOnly: true
+            - name: bootstrap-conf
+              mountPath: "/etc/keystone/logging.conf"
+              subPath: "logging.conf"
+              readOnly: true
+{{- end }}
+
+{{- define "keystone.templates.steps._bootstrap.volumes" -}}
+- name: bootstrap-sh
+  configMap:
+    name: "keystone-bin"
+    defaultMode: 0555
+- name: etc-service
+  emptyDir: {}
+- name: bootstrap-conf
+  secret:
+    secretName: "keystone-etc"
+    defaultMode: 0444
+{{- end }}
+

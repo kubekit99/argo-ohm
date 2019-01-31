@@ -1,0 +1,6 @@
+---
+{{- define "keystone.templates.steps._image_repo_sync.container" -}}
+{{- end }}
+
+{{- define "keystone.templates.steps._image_repo_sync.volumes" -}}
+{{- end }}
