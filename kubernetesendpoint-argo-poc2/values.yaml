@@ -101,7 +101,15 @@ dependencies:
           - endpoint: node
             service: local_image_registry
   static:
-    api: null
+    api:
+      custom_resource:
+        - apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          namespace: openstack
+          name: wf-keystone-api
+          fields:
+            - key: "status.phase"
+              value: "Succeeded"
     bootstrap:
       jobs:
         - keystone-domain-manage
