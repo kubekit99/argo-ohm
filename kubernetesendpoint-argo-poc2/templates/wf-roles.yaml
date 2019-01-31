@@ -37,3 +37,219 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io 
   kind: Role 
   name: wf-keystone-role
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-credential-rotate-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-credential-rotate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-credential-setup-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-credential-setup
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-fernet-rotate-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-fernet-rotate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-fernet-setup-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-fernet-setup
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-api-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-api
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-bootstrap-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-bootstrap
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-credential-rotate-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-credential-rotate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-db-init-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-db-init
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-db-sync-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-db-sync
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-domain-manage-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-domain-manage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-fernet-rotate-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-fernet-rotate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-rabbit-init-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-rabbit-init
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-keystone-openstack-keystone-test-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keystone-openstack-keystone-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-mariadb-ingress-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mariadb-ingress
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-mariadb-mariadb-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mariadb-mariadb
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-mariadb-openstack-mariadb-ingress-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mariadb-openstack-mariadb-ingress
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-rabbitmq-openstack-rabbitmq-test-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rabbitmq-openstack-rabbitmq-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wf-keystone-rabbitmq-rabbitmq-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: wf-keystone-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rabbitmq-rabbitmq
