@@ -117,36 +117,13 @@ spec:
     {{- include "keystone.templates.steps._db_init.container" . | nindent 6 }}
 
   - name: job-keystone-credential-setup
-    resource:
-      action: get
-      successCondition: status.succeeded == 1
-      failureCondition: status.succeeded == 0
-      manifest: |
-        apiVersion: batch/v1
-        kind: Job
-        metadata:
-          name: keystone-credential-setup
+    container:
+    {{- include "keystone.templates.steps._credential_setup.container" . | nindent 6 }}
 
   - name: job-keystone-fernet-setup
-    resource:
-      action: get
-      successCondition: status.succeeded == 1
-      failureCondition: status.succeeded == 0
-      manifest: |
-        apiVersion: batch/v1
-        kind: Job
-        metadata:
-          name: keystone-fernet-setup
+    container:
+    {{- include "keystone.templates.steps._fernet_setup.container" . | nindent 6 }}
 
   - name: job-keystone-rabbit-init
-    resource:
-      action: get
-      successCondition: status.succeeded == 1
-      failureCondition: status.succeeded == 0
-      manifest: |
-        apiVersion: batch/v1
-        kind: Job
-        metadata:
-          name: keystone-rabbit-init
-
-
+    container:
+    {{- include "keystone.templates.steps._rabbit_init.container" . | nindent 6 }}

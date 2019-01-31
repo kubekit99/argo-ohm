@@ -1,5 +1,5 @@
 ---
-{{- define "keystone.templates.steps._fernet_setup.container" -}}
+{{- define "keystone.templates.steps._fernet_setup.ignore" -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -88,40 +88,43 @@ spec:
       nodeSelector:
         openstack-control-plane: enabled
       containers:
-        - name: keystone-fernet-setup
-          image: "docker.io/openstackhelm/keystone:ocata"
-          imagePullPolicy: IfNotPresent
+{{- end }}
+
+{{- define "keystone.templates.steps._fernet_setup.container" -}}
+name: keystone-fernet-setup
+image: "docker.io/openstackhelm/keystone:ocata"
+imagePullPolicy: IfNotPresent
           
-          env:
-          - name: KEYSTONE_USER
-            value: "keystone"
-          - name: KEYSTONE_GROUP
-            value: "keystone"
-          - name: KUBERNETES_NAMESPACE
-            value: "default"
-          - name: KEYSTONE_KEYS_REPOSITORY
-            value: "/etc/keystone/fernet-keys/"
-          command:
-            - python
-            - /tmp/fernet-manage.py
-            - fernet_setup
-          volumeMounts:
-          - name: etckeystone
-            mountPath: /etc/keystone
-          - name: fernet-keys
-            mountPath: "/etc/keystone/fernet-keys/"
-          - name: keystone-etc
-            mountPath: /etc/keystone/keystone.conf
-            subPath: keystone.conf
-            readOnly: true
-          - name: keystone-etc
-            mountPath: /etc/keystone/logging.conf
-            subPath: logging.conf
-            readOnly: true
-          - name: keystone-bin
-            mountPath: /tmp/fernet-manage.py
-            subPath: fernet-manage.py
-            readOnly: true
+env:
+- name: KEYSTONE_USER
+  value: "keystone"
+- name: KEYSTONE_GROUP
+  value: "keystone"
+- name: KUBERNETES_NAMESPACE
+  value: "default"
+- name: KEYSTONE_KEYS_REPOSITORY
+  value: "/etc/keystone/fernet-keys/"
+command:
+  - python
+  - /tmp/fernet-manage.py
+  - fernet_setup
+volumeMounts:
+- name: etckeystone
+  mountPath: /etc/keystone
+- name: fernet-keys
+  mountPath: "/etc/keystone/fernet-keys/"
+- name: keystone-etc
+  mountPath: /etc/keystone/keystone.conf
+  subPath: keystone.conf
+  readOnly: true
+- name: keystone-etc
+  mountPath: /etc/keystone/logging.conf
+  subPath: logging.conf
+  readOnly: true
+- name: keystone-bin
+  mountPath: /tmp/fernet-manage.py
+  subPath: fernet-manage.py
+  readOnly: true
 {{- end }}
 
 {{- define "keystone.templates.steps._fernet_setup.volumes" -}}

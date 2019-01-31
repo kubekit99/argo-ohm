@@ -1,5 +1,5 @@
 ---
-{{- define "keystone.templates.steps._rabbit_init.container" -}}
+{{- define "keystone.templates.steps._rabbit_init.ignore" -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -94,29 +94,33 @@ spec:
             
       containers:
         - name: rabbit-init
-          image: "docker.io/rabbitmq:3.7-management"
-          imagePullPolicy: "IfNotPresent"
+{{- end }}
+
+{{- define "keystone.templates.steps._rabbit_init.container" -}}
+name: rabbit-init
+image: "docker.io/rabbitmq:3.7-management"
+imagePullPolicy: "IfNotPresent"
           
-          command:
-            - /tmp/rabbit-init.sh
-          volumeMounts:
-            - name: rabbit-init-sh
-              mountPath: /tmp/rabbit-init.sh
-              subPath: rabbit-init.sh
-              readOnly: true
-          env:
-          - name: RABBITMQ_ADMIN_CONNECTION
-            valueFrom:
-              secretKeyRef:
-                name: keystone-rabbitmq-admin
-                key: RABBITMQ_CONNECTION
-          - name: RABBITMQ_USER_CONNECTION
-            valueFrom:
-              secretKeyRef:
-                name: keystone-rabbitmq-user
-                key: RABBITMQ_CONNECTION
-          - name: RABBITMQ_AUXILIARY_CONFIGURATION
-            value: "{\"policies\":[{\"apply-to\":\"all\",\"definition\":{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\",\"message-ttl\":70000},\"name\":\"ha_ttl_keystone\",\"pattern\":\"(notifications)\\\\.\",\"priority\":0,\"vhost\":\"keystone\"}]}"
+command:
+  - /tmp/rabbit-init.sh
+volumeMounts:
+  - name: rabbit-init-sh
+    mountPath: /tmp/rabbit-init.sh
+    subPath: rabbit-init.sh
+    readOnly: true
+env:
+- name: RABBITMQ_ADMIN_CONNECTION
+  valueFrom:
+    secretKeyRef:
+      name: keystone-rabbitmq-admin
+      key: RABBITMQ_CONNECTION
+- name: RABBITMQ_USER_CONNECTION
+  valueFrom:
+    secretKeyRef:
+      name: keystone-rabbitmq-user
+      key: RABBITMQ_CONNECTION
+- name: RABBITMQ_AUXILIARY_CONFIGURATION
+  value: "{\"policies\":[{\"apply-to\":\"all\",\"definition\":{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\",\"message-ttl\":70000},\"name\":\"ha_ttl_keystone\",\"pattern\":\"(notifications)\\\\.\",\"priority\":0,\"vhost\":\"keystone\"}]}"
 {{- end }}
 
 {{- define "keystone.templates.steps._rabbit_init.volumes" -}}
