@@ -117,6 +117,13 @@ helm install --name argo-poc1 --namespace openstack .
 
 TBD
 
+### Goal
+
+To create the following DAG (very messy, sorry):
+<p align="center">
+  <img src="DAG.jpg" />
+</p>
+
 ## Removing jobs in keystone helm chart and replacing them with argo steps
 
 ### Development

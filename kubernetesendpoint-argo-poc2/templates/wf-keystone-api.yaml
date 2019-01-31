@@ -19,50 +19,40 @@ spec:
 
   templates:
   - name: wf-keystone-api
-    steps:
-    - - name: svc-memcached
+    dag:
+      tasks:
+      - name: svc-memcached
         template: svc-memcached
-    - - name: svc-mariadb
+      - name: svc-mariadb
         template: svc-mariadb
-    - - name: wf-keystone-db-sync
-        template: wf-keystone-db-sync
-    - - name: job-keystone-credential-setup
-        template: job-keystone-credential-setup
-    - - name: job-keystone-fernet-setup
-        template: job-keystone-fernet-setup
-    - - name: wf-keystone-rabbit-init
-        template: wf-keystone-rabbit-init
-    - - name: svc-keystone-api
-        template: svc-keystone-api
-
-  - name: wf-keystone-db-sync
-    steps:
-    - - name: svc-mariadb
-        template: svc-mariadb
-    - - name: wf-keystone-db-init
-        template: wf-keystone-db-init
-    - - name: job-keystone-credential-setup
-        template: job-keystone-credential-setup
-    - - name: job-keystone-fernet-setup
-        template: job-keystone-fernet-setup
-    - - name: wf-keystone-rabbit-init
-        template: wf-keystone-rabbit-init
-    - - name: job-keystone-db-sync
-        template: job-keystone-db-sync
-
-  - name: wf-keystone-db-init
-    steps:
-    - - name: svc-mariadb
-        template: svc-mariadb
-    - - name: job-keystone-db-init
-        template: job-keystone-db-init
-
-  - name: wf-keystone-rabbit-init
-    steps:
-    - - name: svc-rabbitmq
+      - name: svc-rabbitmq
         template: svc-rabbitmq
-    - - name: job-keystone-rabbit-init
+      - name: job-keystone-db-init
+        template: job-keystone-db-init
+        dependencies:
+        - svc-mariadb
+      - name: job-keystone-rabbit-init
         template: job-keystone-rabbit-init
+        dependencies:
+        - svc-rabbitmq
+      - name: job-keystone-db-sync
+        template: job-keystone-db-sync
+        dependencies:
+        - job-keystone-db-init
+        - job-keystone-rabbit-init
+      - name: job-keystone-credential-setup
+        template: job-keystone-credential-setup
+        dependencies:
+        - job-keystone-db-sync
+      - name: job-keystone-fernet-setup
+        template: job-keystone-fernet-setup
+        dependencies:
+        - job-keystone-db-sync
+      - name: svc-keystone-api
+        template: svc-keystone-api
+        dependencies:
+          - job-keystone-credential-setup
+          - job-keystone-fernet-setup
 
   - name: svc-memcached
     resource:
