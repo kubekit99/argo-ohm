@@ -1,6 +1,129 @@
 ---
+{{- define "keystone.templates.steps._image_repo_sync.ignore" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keystone-image-repo-sync
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: openstack-keystone-image-repo-sync
+  namespace: docker-registry
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openstack-docker-registry-keystone-image-repo-sync
+subjects:
+  - kind: ServiceAccount
+    name: keystone-image-repo-sync
+    namespace: docker-registry
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: openstack-docker-registry-keystone-image-repo-sync
+  namespace: docker-registry
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - services
+      - endpoints
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "keystone-image-repo-sync"
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: openstack
+        application: keystone
+        component: image-repo-sync
+    spec:
+      serviceAccountName: keystone-image-repo-sync
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+        
+      initContainers:
+        
+        
+        - name: init
+          image: "quay.io/stackanetes/kubernetes-entrypoint:v0.3.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "docker-registry:docker-registry"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: COMMAND
+              value: "echo done"
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+            
+      containers:
+        - name: image-repo-sync
+{{- end }}
+
 {{- define "keystone.templates.steps._image_repo_sync.container" -}}
+          name: image-repo-sync
+          image: "docker.io/docker:17.07.0"
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: LOCAL_REPO
+              value: "localhost:5000"
+            - name: IMAGE_SYNC_LIST
+              value: "docker.io/openstackhelm/heat:ocata,docker.io/openstackhelm/heat:ocata,docker.io/openstackhelm/heat:ocata,,,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/keystone:ocata,docker.io/openstackhelm/heat:ocata,docker.io/rabbitmq:3.7-management,docker.io/xrally/xrally-openstack:1.3.0"
+          command:
+            - /tmp/image-repo-sync.sh
+          volumeMounts:
+            - name: bootstrap-sh
+              mountPath: /tmp/image-repo-sync.sh
+              subPath: image-repo-sync.sh
+              readOnly: true
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
 {{- end }}
 
 {{- define "keystone.templates.steps._image_repo_sync.volumes" -}}
+        - name: bootstrap-sh
+          configMap:
+            name: "keystone-bin"
+            defaultMode: 0555
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
 {{- end }}
+

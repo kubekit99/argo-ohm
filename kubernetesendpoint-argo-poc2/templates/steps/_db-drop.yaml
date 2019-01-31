@@ -1,6 +1,186 @@
 ---
+{{- define "keystone.templates.steps._db_drop.ignore" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keystone-db-drop
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: openstack-keystone-db-drop
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openstack-default-keystone-db-drop
+subjects:
+  - kind: ServiceAccount
+    name: keystone-db-drop
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: openstack-default-keystone-db-drop
+  namespace: default
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - services
+      - endpoints
+      - jobs
+      - pods
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: openstack-keystone-db-drop
+  namespace: docker-registry
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openstack-docker-registry-keystone-db-drop
+subjects:
+  - kind: ServiceAccount
+    name: keystone-db-drop
+    namespace: docker-registry
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: openstack-docker-registry-keystone-db-drop
+  namespace: docker-registry
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - batch
+      - apps
+    verbs:
+      - get
+      - list
+    resources:
+      - services
+      - endpoints
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "keystone-db-drop"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        release_group: openstack
+        application: keystone
+        component: db-drop
+    spec:
+      serviceAccountName: keystone-db-drop
+      restartPolicy: OnFailure
+      nodeSelector:
+        openstack-control-plane: enabled
+        
+      initContainers:
+        
+        
+        - name: init
+          image: "quay.io/stackanetes/kubernetes-entrypoint:v0.3.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "default:mariadb,docker-registry:localhost"
+            - name: DEPENDENCY_JOBS
+              value: "keystone-image-repo-sync"
+            - name: DEPENDENCY_DAEMONSET
+              value: ""
+            - name: DEPENDENCY_CONTAINER
+              value: ""
+            - name: DEPENDENCY_POD_JSON
+              value: ""
+            - name: COMMAND
+              value: "echo done"
+          command:
+            - kubernetes-entrypoint
+          volumeMounts:
+            []
+            
+      containers:
+        - name: "keystone-db-drop-0"
+{{- end }}
+
 {{- define "keystone.templates.steps._db_drop.container" -}}
+          name: "keystone-db-drop-0"
+          image: docker.io/openstackhelm/heat:ocata
+          imagePullPolicy: IfNotPresent
+          
+          env:
+            - name: ROOT_DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: "keystone-db-admin"
+                  key: DB_CONNECTION
+            - name: OPENSTACK_CONFIG_FILE
+              value: "/etc/keystone/keystone.conf"
+            - name: OPENSTACK_CONFIG_DB_SECTION
+              value: "database"
+            - name: OPENSTACK_CONFIG_DB_KEY
+              value: "connection"
+          command:
+            - /tmp/db-drop.py
+          volumeMounts:
+            - name: db-drop-sh
+              mountPath: /tmp/db-drop.py
+              subPath: db-drop.py
+              readOnly: true
+            - name: etc-service
+              mountPath: "/etc/keystone"
+            - name: db-drop-conf
+              mountPath: "/etc/keystone/keystone.conf"
+              subPath: "keystone.conf"
+              readOnly: true
+            - name: db-drop-conf
+              mountPath: "/etc/keystone/logging.conf"
+              subPath: "logging.conf"
+              readOnly: true
 {{- end }}
 
 {{- define "keystone.templates.steps._db_drop.volumes" -}}
+- name: db-drop-sh
+  configMap:
+    name: "keystone-bin"
+    defaultMode: 0555
+- name: etc-service
+  emptyDir: {}
+- name: db-drop-conf
+  secret:
+    secretName: "keystone-etc"
+    defaultMode: 0444
 {{- end }}
+
