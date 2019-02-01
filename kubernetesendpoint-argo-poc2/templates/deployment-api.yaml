@@ -54,26 +54,7 @@ spec:
         {{ .Values.labels.api.node_selector_key }}: {{ .Values.labels.api.node_selector_value }}
       terminationGracePeriodSeconds: {{ .Values.pod.lifecycle.termination_grace_period.api.timeout | default "30" }}
       initContainers:
-      - name: init
-        image: ianhowell/kubernetes-entrypoint
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: PATH
-          value: "/app:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/"
-        - name: COMMAND
-          value: "echo \"Finished :)\""
-        - name: INITIAL_SLEEP_INTERVAL
-          value: "1000.0"
-        - name: BACKOFF_RATE
-          value: "1.0"
-        - name: MAX_SLEEP_INTERVAL
-          value: "10000.0"
-        - name: OUTPUT_JSON
-          value: "false"
-        - name: DEPENDENCY_CUSTOM_RESOURCE
-          value: "[{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"Workflow\",\"namespace\":\"openstack\",\"name\":\"wf-keystone-api\",\"fields\":[{\"key\":\"status.phase\",\"value\":\"Succeeded\"}]}]"
-        command:
-        - "kubernetes-entrypoint"
+{{ tuple $envAll "api" $mounts_keystone_api_init | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
       containers:
         - name: keystone-api
 {{ tuple $envAll "keystone_api" | include "helm-toolkit.snippets.image" | indent 10 }}
