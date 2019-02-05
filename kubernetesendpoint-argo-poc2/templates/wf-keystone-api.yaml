@@ -1,3 +1,6 @@
+{{- $serviceAccountName := "wf-keystone-sa" }}
+{{ tuple . "wf-keystone" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
+---
 # The workflow checks that all the jobs and services required for 
 # keystone-api to start are here.
 
