@@ -102,7 +102,7 @@ dependencies:
             service: local_image_registry
   static:
     api:
-      custom_resource:
+      custom_resources:
         - apiVersion: argoproj.io/v1alpha1
           kind: Workflow
           namespace: openstack
