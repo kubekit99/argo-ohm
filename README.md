@@ -1,5 +1,20 @@
 # argo-ohm
-Argo POC
+
+This repo contains a proof of concept for deploying the Openstack Helm Keystone
+chart using Argo workflows.
+
+<p align="center">
+  <img src="DAG.jpg" />
+</p>
+
+Using Argo workflows allows us to run multiple tasks simultaneously, and begin
+new tasks the moment that all dependencies are met. This dramatically speeds up
+deployment time.
+
+<p align="center">
+  <img src="TimeSpent.png" />
+</p>
+
 
 ## Installation of kubernetes 
 
@@ -129,13 +144,6 @@ helm install --name argo-poc1 --namespace openstack .
 ### Notes
 
 TBD
-
-### Goal
-
-To create the following DAG (very messy, sorry):
-<p align="center">
-  <img src="DAG.jpg" />
-</p>
 
 ## Removing jobs in keystone helm chart and replacing them with argo steps
 
