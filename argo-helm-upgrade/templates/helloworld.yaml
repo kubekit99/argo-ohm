@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: hello-world
+  namespace: default
+spec:
+  arguments: {}
+  entrypoint: whalesay
+  templates:
+  - container:
+      args:
+      - hello {{ .Values.hello_who }}
+      command:
+      - cowsay
+      image: docker/whalesay:latest
+      name: ""
+      resources: {}
+    inputs: {}
+    metadata: {}
+    name: whalesay
+    outputs: {}
